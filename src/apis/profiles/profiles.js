@@ -8,7 +8,8 @@ const router = express.Router();
 router.post("/:userName/experiences", async (req, res, next) => {
   try {
    
-      const experience = new ExperienceModel(req.body).save()
+      const experience = new ExperienceModel(req.body)
+      await experience.save();
       console.log(experience)
       const newExperience = await profileModel.findByIdAndUpdate(
         req.params.userName,
@@ -16,6 +17,7 @@ router.post("/:userName/experiences", async (req, res, next) => {
         { new: true }
       );
       if (newExperience) {
+        console.log(newExperience)
         res.send(newExperience);
       } else {
         next(createHttpError(404, `User with ${req.params.userName} is not found `))
@@ -27,9 +29,9 @@ router.post("/:userName/experiences", async (req, res, next) => {
 
 router.get("/:userName/experiences", async (req, res, next) => {
   try {
-    const experiences = await ExperienceModel.findById(req.params.userName);
+    const experiences = await profileModel.findById(req.params.userName);
     if (experiences) {
-      res.send(experiences);
+      res.send(experiences.experiences);
     } else {
       next(
         createHttpError(404, `User with ${req.params.userName} is not found`)
@@ -165,7 +167,7 @@ router.get("/", async (req, res, next) => {
 router.get("/:profileId", async (req, res, next) => {
   try {
     const id = req.params.profileId;
-    const profile = await profileModel.findById(id);
+    const profile = await profileModel.findById(id).populate("experiences");
     if (profile) {
       res.send(profile);
     } else {
