@@ -18,7 +18,7 @@ server.use(cors())
 
 
 //ENDPOINTS
-server.use("/api/posts", postsRoutes)
+server.use("/posts", postsRoutes)
 server.use("/profile", profilesRouter)
 
 

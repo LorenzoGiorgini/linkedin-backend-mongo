@@ -22,15 +22,15 @@ router.post("/:userName/experiences", async (req, res, next) => {
   try {
    
       const experience = new ExperienceModel(req.body)
+
       await experience.save();
-      console.log(experience)
+      
       const newExperience = await profileModel.findByIdAndUpdate(
         req.params.userName,
         { $push: { experiences: experience._id } },
         { new: true }
       );
       if (newExperience) {
-        console.log(newExperience)
         res.send(newExperience);
       } else {
         next(createHttpError(404, `User with ${req.params.userName} is not found `))
@@ -109,7 +109,7 @@ router.post("/:userName/experiences/:expId/picture", multer({storage: cloudinary
 
     const experience = await ExperienceModel.findById(req.params.expId);
 
-    if(experience){
+    if(experience) {
 
       console.log(req.body)
 
@@ -166,7 +166,7 @@ router.post("/", async (req, res, next) => {
 // to get all profiles
 router.get("/", async (req, res, next) => {
   try {
-    const profiles = await profileModel.find();
+    const profiles = await profileModel.find().populate("experiences");
 
     res.send(profiles);
   } catch (error) {
