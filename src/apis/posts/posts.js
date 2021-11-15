@@ -16,7 +16,7 @@ const router = Router()
 const cloudinaryStorage = new CloudinaryStorage({
 	cloudinary,
 	params: {
-		folder: "linkedin-experience-image"
+		folder: "linkedin-posts-images"
 	}
 })
 
@@ -135,7 +135,7 @@ router.route("/:postId")
         
     }
 })
-.post(async (req, res) => {
+.post(multer({storage: cloudinaryStorage}).single("image") ,async (req, res) => {
     try {
 
         const getPostById = await PostModel.findById(req.params.postId);
