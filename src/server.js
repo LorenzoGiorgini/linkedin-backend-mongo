@@ -4,6 +4,7 @@ import cors from "cors";
 import mongoose from "mongoose";
 import profilesRouter from "./apis/profiles/profiles.js";
 
+
 const server = express();
 
 //MIDDLEWARES
@@ -14,6 +15,7 @@ server.use(cors())
 
 //ENDPOINTS
 server.use("/profile", profilesRouter)
+
 
 
 //ERROR HANDLING

@@ -1,3 +1,5 @@
+import profileModel from "../../db/models/profile/ProfileModel.js"
+import createHttpError from "http-errors"
 import express from "express"
 import ExperienceModel from "../../db/models/experience/ExperienceModel.js"
 import createHttpError from "http-errors"
@@ -109,4 +111,94 @@ router.get("/:userName/experiences/CSV", async (req,res,next) => {
     }
 })
 
-export default router
+
+
+
+
+// me profile
+router.get("/me", async(req,res,next)=>{
+    try {
+   
+       const profile = await profileModel.find({name:"rashmi", surname:"hiremath"})
+        res.status(200).send( profile)
+        
+    } catch (error) {
+       next(error) 
+    }
+})
+
+
+
+// post rofile
+router.post("/", async(req,res,next)=>{
+    try {
+        const profile = await profileModel(req.body)
+        const {_id} = await profile.save()
+        res.status(201).send( {_id})
+        
+    } catch (error) {
+       next(error) 
+    }
+})
+
+// to get all profiles
+router.get("/", async(req,res,next)=>{
+    try {
+        const profiles = await profileModel.find()
+     
+            res.send(profiles)
+        
+    } catch (error) {
+       next(error) 
+    }
+})
+
+// get single profile by id
+router.get("/:profileId", async(req,res,next)=>{
+    try {
+        const id = req.params.profileId
+        const profile = await profileModel.findById(id)
+        if(profile){
+            res.send(profile)
+        }else{
+            next(createHttpError(404, `profile with id ${id} not found!`));
+        }
+        
+    } catch (error) {
+       next(error) 
+    }
+})
+
+// update single profile by id
+router.put("/:profileId", async(req,res,next)=>{
+    try {
+        const id = req.params.profileId
+        const profile = await profileModel.findByIdAndUpdate(id,req.body,{new:true})
+        if(profile){
+            res.send(profile)
+        }else{
+            next(createHttpError(404, `profile with id ${id} not found!`));
+        }
+        
+    } catch (error) {
+       next(error) 
+    }
+})
+
+// delete single profile by id
+router.delete("/:profileId", async(req,res,next)=>{
+    try {
+        const id = req.params.profileId
+        const deleteProfile = await profileModel.findByIdAndDelete(id)
+        if(deleteProfile){
+            res.status(204).send("Deleted successfully")
+        }else{
+            next(createHttpError(404, `profile with id ${id} not found!`));
+        }
+        
+    } catch (error) {
+       next(error) 
+    }
+})
+
+export default profileRouter
