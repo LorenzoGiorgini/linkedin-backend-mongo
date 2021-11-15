@@ -12,9 +12,24 @@ import profilesRouter from "./apis/profiles/profiles.js";
 
 const server = express();
 
+
+const whiteList = [process.env.LOCAL_FE];
+const corsOptions = {
+  origin: (origin, callback) => {
+    if (whiteList.some((allowedUrl) => allowedUrl === origin)) {
+      callback(null, true);
+    } else {
+      const error = new Error("Not allowed by cors!");
+      error.status = 403;
+      callback(error);
+    }
+  },
+};
+
+
 //MIDDLEWARES
 server.use(express.json())
-server.use(cors())
+server.use(cors(corsOptions))
 
 
 //ENDPOINTS
