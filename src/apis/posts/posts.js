@@ -1,16 +1,15 @@
 import express from 'express';
 import PostModel from '../../db/models/post/PostModel.js';
-import ProfileModel from '../../db/models/profile/ProfileModel.js'
-
-import multer from "multer"
-import { CloudinaryStorage } from "multer-storage-cloudinary"
-import { v2 as cloudinary } from "cloudinary"
+import ProfileModel from '../../db/models/profile/ProfileModel.js';
+import multer from "multer";
+import { CloudinaryStorage } from "multer-storage-cloudinary";
+import { v2 as cloudinary } from "cloudinary";
 
 
 const { Router } = express;
 
 
-const router = Router()
+const router = Router();
 
 
 const cloudinaryStorage = new CloudinaryStorage({
