@@ -1,23 +1,23 @@
+//Libraries imports
 import express from "express";
 import listEndpoints from "express-list-endpoints";
 import cors from "cors";
 import mongoose from "mongoose";
 
 
+//Endpoints imports 
+import postsRoutes from "../src/apis/posts/posts.js";
+
+
 const server = express();
 
 //MIDDLEWARES
-
 server.use(express.json())
 server.use(cors())
 
 
 //ENDPOINTS
-
-
-
-//ERROR HANDLING
-
+server.use("/api/posts", postsRoutes)
 
 
 mongoose.connect(process.env.MONGO_URL)
