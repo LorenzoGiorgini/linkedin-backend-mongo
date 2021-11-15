@@ -2,11 +2,16 @@ import profileModel from "../../db/models/profile/ProfileModel.js";
 import express from "express";
 import ExperienceModel from "../../db/models/experience/ExperienceModel.js";
 import createHttpError from "http-errors";
+import { pipeline } from 'stream';
 
 
 import multer from "multer"
 import { CloudinaryStorage } from "multer-storage-cloudinary"
 import { v2 as cloudinary } from "cloudinary"
+
+
+//pdf 
+import { createPDF } from "../../db-tools/pdf/pdf.js"
 
 const router = express.Router();
 
@@ -221,6 +226,31 @@ router.delete("/:profileId", async (req, res, next) => {
   } catch (error) {
     next(error);
   }
+});
+
+
+router.get('/:profileId/CV' , async (req, res, next) => {
+	try {
+
+    const profile = await profileModel.findById(req.params.profileId).populate("experiences");
+
+    res.setHeader('Content-Disposition', `attachment; filename=${profile.name + " " + profile.surname}.pdf`)
+
+		//creating the pdf
+
+		const source = await createPDF(profile)
+
+    const destination = res
+
+    pipeline(source, destination, (err) => {
+      if(err) {
+        next(err)
+      }
+    })
+
+	} catch (error) {
+		next(error);
+	}
 });
 
 
