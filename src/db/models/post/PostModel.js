@@ -41,7 +41,11 @@ const PostModel = new Schema({
     user: {
         type: Schema.Types.ObjectId,
         ref: 'Profile',
-    }
+    },
+    comments: [{
+        user: {type: Schema.Types.ObjectId, ref: 'Profile'},
+        comment: {type: String, required: true},
+    }, {timestamps: true}]
 }, {
     timestamps: true
 })

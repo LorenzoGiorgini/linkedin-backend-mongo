@@ -10,12 +10,9 @@ const ProfileSchema = new Schema({
     area:{type:String,required:true},
     image:{type:String,required:true},
     username:{type:String,required:true},
-    experiences:[
-        {type: Schema.Types.ObjectId, ref: "Experience"}]
-},
-{
+    experiences:[{type: Schema.Types.ObjectId, ref: "Experience"}]
+}, {
     timestamps:true
-}
-)
+})
 
-export default model("Profile",ProfileSchema)
+export default model("Profile" , ProfileSchema)
