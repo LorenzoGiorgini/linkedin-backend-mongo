@@ -3,7 +3,20 @@ import express from "express";
 import ExperienceModel from "../../db/models/experience/ExperienceModel.js";
 import createHttpError from "http-errors";
 
+
+import multer from "multer"
+import { CloudinaryStorage } from "multer-storage-cloudinary"
+import { v2 as cloudinary } from "cloudinary"
+
 const router = express.Router();
+
+
+const cloudinaryStorage = new CloudinaryStorage({
+	cloudinary,
+	params: {
+		folder: "linkedin-experience-image"
+	}
+})
 
 router.post("/:userName/experiences", async (req, res, next) => {
   try {
@@ -29,7 +42,7 @@ router.post("/:userName/experiences", async (req, res, next) => {
 
 router.get("/:userName/experiences", async (req, res, next) => {
   try {
-    const experiences = await profileModel.findById(req.params.userName);
+    const experiences = await profileModel.findById(req.params.userName).populate("experiences");
     if (experiences) {
       res.send(experiences.experiences);
     } else {
@@ -42,24 +55,16 @@ router.get("/:userName/experiences", async (req, res, next) => {
 
 router.get("/:userName/experiences/:expId", async (req, res, next) => {
   try {
-    const experience = await ExperienceModel.findById(req.params.userName);
+    const experience = await ExperienceModel.findById(req.params.expId);
+
     if (experience) {
-      const experienceToAdd = experience.experiences.find(
-        (e) => e._id.toString() === req.params.expId
-      );
-      if (experienceToAdd) {
-        res.send(experienceToAdd);
-      } else {
-        next(
-          createHttpError(
-            404,
-            `Experience with id ${req.params.expId} is not found`
-          )
-        );
-      }
+      res.status(200).send({success: true, data: experience});
+
     } else {
-      next(createHttpError(404`User with ${req.params.userName} is not found`));
+      res.status(404).send({success: false, message:  `Experience with ${req.params.expId} is not found`});
+
     }
+
   } catch (error) {
     next(error);
   }
@@ -67,33 +72,16 @@ router.get("/:userName/experiences/:expId", async (req, res, next) => {
 
 router.put("/:userName/experiences/:expId", async (req, res, next) => {
   try {
-    const experience = await ExperienceModel.findById(req.params.userName);
+    const experience = await ExperienceModel.findByIdAndUpdate(req.params.expId, ...req.body , {new: true});
 
     if (experience) {
-      const index = experience.experiences.findIndex(
-        (e) => e._id.toString() === req.params.expId
-      );
+      res.status(200).send({success: true, data: experience});
 
-      if (index !== -1) {
-        experience.experiences[index] = {
-          ...experience.comment[index].toObject(),
-          ...req.body,
-        };
-        await experience.save();
-        res.send(experience);
-      } else {
-        next(
-          createHttpError(
-            404,
-            `Experience with id ${req.params.expId} is not found`
-          )
-        );
-      }
     } else {
-      next(
-        createhttpError(404, `User with ${req.params.userName} is not found`)
-      );
+      res.status(404).send({success: false, message:  `Experience with ${req.params.expId} is not found`});
+
     }
+
   } catch (error) {
     next(error);
   }
@@ -101,31 +89,54 @@ router.put("/:userName/experiences/:expId", async (req, res, next) => {
 
 router.delete("/:userName/experiences/:expId", async (req, res, next) => {
   try {
-    experienceToDelete = await ExperienceModel.findByIdAndUpdate(
-      req.params.userName,
-      { $pull: { experiences: { _id: req.params.expId } } },
-      { new: true }
-    );
-    if (experienceToDelete) {
-      res.send(experienceToDelete);
+    const experience = await ExperienceModel.findByIdAndDelete(req.params.expId);
+
+    if (experience) {
+      res.status(204).send({success: true, message: `Experience with ${req.params.expId} is deleted successfully`});
+
     } else {
-      next(
-        createHttpError(404, `User with ${req.params.userName} is not found`)
-      );
+      res.status(404).send({success: false, message:  `Experience with ${req.params.expId} is not found`});
+
     }
+
   } catch (error) {
     next(error);
   }
 });
 
-router.post("/:userName/experiences/:expId/picture", async (req, res, next) => {
+router.post("/:userName/experiences/:expId/picture", multer({storage: cloudinaryStorage}).single("image") , async (req, res, next) => {
   try {
-  } catch (error) {}
+
+    const experience = await ExperienceModel.findById(req.params.expId);
+
+    if(experience){
+
+      console.log(req.body)
+
+      const {image} = req.body;
+
+      experience.image = image;
+
+      await experience.save();
+      
+      res.status(203).send({success: true, data: experience});
+
+    } else {
+      res.status(404).send({success: false, message: "Experience not found"});
+
+    }
+
+  } catch (error) {
+    res.status(500).send({success: false, message: error.message});
+  }
 });
 
 router.get("/:userName/experiences/CSV", async (req, res, next) => {
   try {
-  } catch (error) {}
+
+  } catch (error) {
+
+  }
 });
 
 // me profile
@@ -134,7 +145,7 @@ router.get("/me", async (req, res, next) => {
     const profile = await profileModel.find({
       name: "rashmi",
       surname: "hiremath",
-    });
+    }).populate("experiences");
     res.status(200).send(profile);
   } catch (error) {
     next(error);
@@ -195,6 +206,8 @@ router.put("/:profileId", async (req, res, next) => {
   }
 });
 
+
+
 // delete single profile by id
 router.delete("/:profileId", async (req, res, next) => {
   try {
@@ -209,5 +222,7 @@ router.delete("/:profileId", async (req, res, next) => {
     next(error);
   }
 });
+
+
 
 export default router;
