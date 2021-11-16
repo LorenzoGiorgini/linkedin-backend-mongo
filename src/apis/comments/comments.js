@@ -30,4 +30,6 @@ router.route('https://striveschool-api.herokuapp.com/api/posts/{id}/like')
         res.status(500).send({ success: false, error: error.message });
 
     }
-});
+    });
+
+export default router;
