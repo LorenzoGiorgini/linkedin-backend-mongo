@@ -101,8 +101,6 @@ router.get("/:userName/experiences/csv", async (req, res, next) => {
   });
 
 router.get("/:userName/experiences/:expId", async (req, res, next) => {
-    console.log('inside second get')
-    console.log(req.params.expId, 'should expect csv')
   try {
     const experience = await ExperienceModel.findById(req.params.expId);
 
