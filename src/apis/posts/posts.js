@@ -1,68 +1,55 @@
-import express from 'express';
-import PostModel from '../../db/models/post/PostModel.js';
-import ProfileModel from '../../db/models/profile/ProfileModel.js';
+import express from "express";
+import PostModel from "../../db/models/post/PostModel.js";
+import ProfileModel from "../../db/models/profile/ProfileModel.js";
 import multer from "multer";
 import { CloudinaryStorage } from "multer-storage-cloudinary";
 import { v2 as cloudinary } from "cloudinary";
-import mongoose from "mongoose"
+import mongoose from "mongoose";
 
 const { Router } = express;
 
-
 const router = Router();
 
-
 const cloudinaryStorage = new CloudinaryStorage({
-	cloudinary,
-	params: {
-		folder: "linkedin-posts-images"
-	}
-})
+  cloudinary,
+  params: {
+    folder: "linkedin-posts-images",
+  },
+});
 
 /*  GET POSTS:
 Retrieve posts
     - GET /api/posts/
 */
 
-router.route("/")
-.get(async (req, res) => {
-    try {
-        const posts = await PostModel.find().populate('user');
+router.route("/").get(async (req, res) => {
+  try {
+    const posts = await PostModel.find().populate("user");
 
-        res.status(200).send({success: true, data: posts});
-        
-    } catch (error) {
-        res.status(500).send({success: false, error: error.message})
-
-    }
-})
-
+    res.status(200).send({ success: true, data: posts });
+  } catch (error) {
+    res.status(500).send({ success: false, error: error.message });
+  }
+});
 
 /*  Posting a new post:
 Retrieve posts
     - GET /api/posts/:userId
 */
 
-router.route("/:userId")
-.post(async (req, res) => {
-    try {
-        const post = new PostModel(req.body);
+router.route("/:userId").post(async (req, res) => {
+  try {
+    const post = new PostModel(req.body);
 
-        post.user = req.params.userId;
+    post.user = req.params.userId;
 
-        await post.save();
+    await post.save();
 
-        res.status(201).send({success: true, data: post})
-
-    } catch (error) {
-        res.status(500).send({success: false, error: error.message})
-
-    }
-})
-
-
-
-
+    res.status(201).send({ success: true, data: post });
+  } catch (error) {
+    res.status(500).send({ success: false, error: error.message });
+  }
+});
 
 /*    
 Retrieves the specified post
@@ -81,84 +68,79 @@ Add an image to the post under the name of "post"
     - POST /api/posts/{postId}
 */
 
-
-
-router.route("/:postId")
-.get(async (req, res) => {
+router
+  .route("/:postId")
+  .get(async (req, res) => {
     try {
+      const getPostById = await PostModel.findById(req.params.postId).populate(
+        "user"
+      );
 
-        const getPostById = await PostModel.findById(req.params.postId).populate('user');
-
-        if(getPostById) {
-            res.status(200).send({success: true, data: getPostById});
-
-        } else {
-            res.status(404).send({success: false, error: "Post not found"})
-
-        }
-  
+      if (getPostById) {
+        res.status(200).send({ success: true, data: getPostById });
+      } else {
+        res.status(404).send({ success: false, error: "Post not found" });
+      }
     } catch (error) {
-        res.status(500).send({success: false, error: error.message})
-
+      res.status(500).send({ success: false, error: error.message });
     }
-})
-.put(async (req, res) => {
+  })
+  .put(async (req, res) => {
     try {
+      const updatePost = await PostModel.findByIdAndUpdate(
+        req.params.postId,
+        req.body,
+        { new: true }
+      );
 
-        const updatePost = await PostModel.findByIdAndUpdate(req.params.postId, req.body, {new: true});
-
-        if(updatePost) {
-            res.status(200).send({success: true, data: updatePost});
-        } else {
-            res.status(404).send({success: false,  message: "Post not found"});
-        }
-        
+      if (updatePost) {
+        res.status(200).send({ success: true, data: updatePost });
+      } else {
+        res.status(404).send({ success: false, message: "Post not found" });
+      }
     } catch (error) {
-        res.status(500).send({success: false, error: error.message})
-
+      res.status(500).send({ success: false, error: error.message });
     }
-})
-.delete(async (req, res) => {
+  })
+  .delete(async (req, res) => {
     try {
+      const deleteSelectedPost = await PostModel.findByIdAndDelete(
+        req.params.postId
+      );
 
-        const deleteSelectedPost = await PostModel.findByIdAndDelete(req.params.postId);
-
-        if(deleteSelectedPost){
-            res.status(204).send({success: true, message: "Post Deleted Succesfully"});
-        } else {
-            res.status(404).send({success: false, message: "Post not found"});
-        }
-
+      if (deleteSelectedPost) {
+        res
+          .status(204)
+          .send({ success: true, message: "Post Deleted Succesfully" });
+      } else {
+        res.status(404).send({ success: false, message: "Post not found" });
+      }
     } catch (error) {
-        res.status(500).send({success: false, error: error.message})
-        
+      res.status(500).send({ success: false, error: error.message });
     }
-})
-.post(multer({storage: cloudinaryStorage}).single("image") ,async (req, res) => {
-    try {
-
+  })
+  .post(
+    multer({ storage: cloudinaryStorage }).single("image"),
+    async (req, res) => {
+      try {
         const getPostById = await PostModel.findById(req.params.postId);
 
-        if(getPostById) {
+        if (getPostById) {
+          const { image } = req.body;
 
-            const { image } = req.body;
+          getPostById.image = image;
 
-            getPostById.image = image;
+          await getPostById.save();
 
-            await getPostById.save();
-
-            res.status(203).send({success: true, data: getPostById});
-
+          res.status(203).send({ success: true, data: getPostById });
         } else {
-            res.status(404).send({success: false, message: "Post not found"});
-
+          res.status(404).send({ success: false, message: "Post not found" });
         }
-        
-    } catch (error) {
-        res.status(500).send({success: false, error: error.message})
-        
+      } catch (error) {
+        res.status(500).send({ success: false, error: error.message });
+      }
     }
-})
+  );
 
 /*
 - GET /api/posts/{id}/comment
@@ -178,91 +160,86 @@ Deletes a given comment
 Edit a given comment
  */
 
-
-
-router.route("/:postId/comment")
-.get(async (req, res) => {
+router
+  .route("/:postId/comment")
+  .get(async (req, res) => {
     try {
-        const getComments = await PostModel.findById(req.params.postId).populate('comments.user');
+      const getComments = await PostModel.findById(req.params.postId).populate(
+        "comments.user"
+      );
 
-        if(getComments) {
-            res.status(200).send({success: true, data: getComments.comments});
-            
-        } else {
-            res.status(404).send({success: false, error: "Post not found"})
-
-        }
-
+      if (getComments) {
+        res.status(200).send({ success: true, data: getComments.comments });
+      } else {
+        res.status(404).send({ success: false, error: "Post not found" });
+      }
     } catch (error) {
-        res.status(500).send({success: false, error: error.message})
-
+      res.status(500).send({ success: false, error: error.message });
     }
-})
-.post(async (req, res) => {
+  })
+  .post(async (req, res) => {
     try {
+      console.log(req.body);
 
-        console.log(req.body)
+      const newComment = await PostModel.findByIdAndUpdate(
+        req.params.postId,
+        { $push: { comments: req.body } },
+        { new: true }
+      );
 
-        const newComment = await PostModel.findByIdAndUpdate(req.params.postId, {$push: {comments: req.body}} , {new: true});
-
-        if(newComment) {
-            res.status(201).send({success: true, data: newComment.comments});
-        } else {
-            res.status(400).send({success: false, error: "Bad Request"})
-
-        }
-
-        
+      if (newComment) {
+        res.status(201).send({ success: true, data: newComment.comments });
+      } else {
+        res.status(400).send({ success: false, error: "Bad Request" });
+      }
     } catch (error) {
-        res.status(500).send({success: false, error: error.message})
-        
+      res.status(500).send({ success: false, error: error.message });
     }
-})
+  });
 
-
-
-router.route("/:postId/comment/:commentId")
-.delete(async (req, res) => {
+router
+  .route("/:postId/comment/:commentId")
+  .delete(async (req, res) => {
     try {
+      const deleteComment = await PostModel.findByIdAndUpdate(
+        req.params.postId,
+        { $pull: { comments: { _id: req.params.commentId } } },
+        { new: true }
+      );
 
-        const deleteComment = await PostModel.findByIdAndUpdate(req.params.postId, 
-            {$pull: {comments: {_id: req.params.commentId}}}, 
-            {new: true}
-        );
-
-        if(deleteComment) {
-            res.status(204).send({success: true, message: "Comment Deleted Succesfully"});
-        } else { 
-            res.status(404).send({success: false, message: "Comment not found"})
-        }
-        
+      if (deleteComment) {
+        res
+          .status(204)
+          .send({ success: true, message: "Comment Deleted Succesfully" });
+      } else {
+        res.status(404).send({ success: false, message: "Comment not found" });
+      }
     } catch (error) {
-        res.status(500).send({success: false, error: error.message})
-
+      res.status(500).send({ success: false, error: error.message });
     }
-})
-.put(async (req, res) => {
+  })
+  .put(async (req, res) => {
     try {
+      const updateComment = await PostModel.updateOne(
+        {
+          _id: req.params.postId,
+          "comments._id": new mongoose.Types.ObjectId(req.params.commentId),
+        },
+        {
+          $set: { "comments.$.comment": req.body.comment },
+        },
+        { new: true }
+      );
 
-        const updateComment  = await PostModel.updateOne({_id:req.params.postId,"comments._id":new mongoose.Types.ObjectId(req.params.commentId)},  {
-            $set: {"comments.$.comment": req.body.comment}
-        }, {new: true});
-
-        if(updateComment) {
-            res.status(203).send({success: true, data: updateComment.comments});
-
-        } else {
-            res.status(404).send({success: false, message: "Comment not found"})
-
-        }
-        
+      if (updateComment) {
+        res.status(203).send({ success: true, data: updateComment.comments });
+      } else {
+        res.status(404).send({ success: false, message: "Comment not found" });
+      }
     } catch (error) {
-        res.status(500).send({success: false, error: error.message})
-
+      res.status(500).send({ success: false, error: error.message });
     }
-})
-
-
+  });
 
 /* - POST /api/posts/{id}/like
 
@@ -272,39 +249,45 @@ Like the post for current user (each user can like only once per post)
 
 Remove the like for current user */
 
+router.route("/:postId/like").post(async (req, res) => {
+  try {
+    let getPostById = await PostModel.findById(req.params.postId);
 
+    if (getPostById) {
+      const alreadyLiked = await PostModel.findOne({
+        _id: req.params.postId,
+        "likes.user": new mongoose.Types.ObjectId(req.body.user),
+      });
 
-
-
-router.route("/:postId/like")
-.post(async (req, res) => {
-
-    try {
-
-        const alreadyLiked = await PostModel.findById(req.params.postId).populate('likes.user');
-        console.log(alreadyLiked)
-
-        if(alreadyLiked) {
-            const removeLike = await PostModel.findByIdAndUpdate(req.params.postId, {$pull: {likes: req.body}}, {new: true});
-            res.status(200).send({success: true, data: removeLike.likes});
-        } else {
-            const likePost = await PostModel.findByIdAndUpdate(req.params.postId, {$push: {likes: req.body}}, {new: true});
-            res.status(201).send({success: true, data: likePost.likes});
-        }
-        
-    } catch (error) {
-        res.status(500).send({success: false, error: error.message})
+      if (!alreadyLiked) {
+        await PostModel.findByIdAndUpdate(
+          req.params.postId,
+          {
+            $push: { likes: { user: req.body.user } },
+          },
+          { new: true }
+        );
+      } else {
+        await PostModel.findByIdAndUpdate(
+          req.params.postId,
+          {
+            $pull: { likes: { user: req.body.user } },
+          },
+          { new: true }
+        );
+      }
+    } else {
+      res
+        .status(404)
+        .send({ success: false, message: "That post doesn't exist" });
     }
 
-})
+    getPostById = await PostModel.findById(req.params.postId);
 
+    res.status(203).send({ success: true, data: getPostById });
+  } catch (error) {
+    res.status(404).send({ success: false, errorr: error.message });
+  }
+});
 
-
-
-
-
-
-
-
-
-export default router
+export default router;

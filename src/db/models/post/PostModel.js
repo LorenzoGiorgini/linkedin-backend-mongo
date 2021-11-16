@@ -47,8 +47,7 @@ const PostModel = new Schema({
         comment: {type: String, required: true},
     }, {timestamps: true}],
     likes: [{
-        user: {type: Schema.Types.ObjectId, ref: 'Profile'},
-        like: {type: Boolean, required: true}
+        user: {type: Schema.Types.ObjectId, ref: 'Profile'}
     }, {timestamps: true}]
 }, {
     timestamps: true
