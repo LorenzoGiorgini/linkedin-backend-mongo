@@ -37,11 +37,9 @@ Retrieve posts
     - GET /api/posts/:userId
 */
 
-router.route("/:userId").post(async (req, res) => {
+router.route("/").post(async (req, res) => {
   try {
     const post = new PostModel(req.body);
-
-    post.user = req.params.userId;
 
     await post.save();
 
@@ -67,6 +65,24 @@ Removes a post
 Add an image to the post under the name of "post"
     - POST /api/posts/{postId}
 */
+
+/*
+- GET /api/posts/{id}/comment
+
+Retrieve the list of comments for a given post
+
+- POST /api/posts/{id}/comment
+
+Create the a new comment for a given post
+
+- DELETE /api/posts/{id}/comment/{commentId}
+
+Deletes a given comment
+
+- PUT /api/posts/{id}/comment/{commentId}
+
+Edit a given comment
+ */
 
 router
   .route("/:postId")
@@ -122,13 +138,12 @@ router
   .post(
     multer({ storage: cloudinaryStorage }).single("image"),
     async (req, res) => {
+      console.log("update image??");
       try {
         const getPostById = await PostModel.findById(req.params.postId);
 
         if (getPostById) {
-          const { image } = req.body;
-
-          getPostById.image = image;
+          getPostById.image = req.file.path;
 
           await getPostById.save();
 
@@ -141,24 +156,6 @@ router
       }
     }
   );
-
-/*
-- GET /api/posts/{id}/comment
-
-Retrieve the list of comments for a given post
-
-- POST /api/posts/{id}/comment
-
-Create the a new comment for a given post
-
-- DELETE /api/posts/{id}/comment/{commentId}
-
-Deletes a given comment
-
-- PUT /api/posts/{id}/comment/{commentId}
-
-Edit a given comment
- */
 
 router
   .route("/:postId/comment")
