@@ -253,6 +253,25 @@ router.put("/:profileId", async (req, res, next) => {
   }
 });
 
+router.post("/:profileId/picture", multer({ storage: cloudinaryStorage }).single("image") , async (req, res, next) => {
+  try {
+    const id = req.params.profileId;
+    const profile = await profileModel.findById(id)
+    if (profile) {
+      profile.image = req.file.path;
+      
+      await profile.save();
+
+      res.status(201).send({success: true, data: profile});
+
+    } else {
+      next(createHttpError(404, `profile with id ${id} not found!`));
+    }
+  } catch (error) {
+    next(error);
+  }
+});
+
 // delete single profile by id
 router.delete("/:profileId", async (req, res, next) => {
   try {
