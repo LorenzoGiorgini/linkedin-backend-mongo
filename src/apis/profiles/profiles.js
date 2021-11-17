@@ -45,7 +45,6 @@ router.post("/:userName/experiences", async (req, res, next) => {
 });
 
 router.get("/:userName/experiences", async (req, res, next) => {
-    console.log('inside first get')
   try {
     const experiences = await profileModel
       .findById(req.params.userName)
@@ -60,7 +59,6 @@ router.get("/:userName/experiences", async (req, res, next) => {
   } catch (error) {}
 });
 router.get("/:userName/experiences/csv", async (req, res, next) => {
-    console.log("inside csv experience")
       try {
       res.setHeader(
         "Content-Disposition",
@@ -168,11 +166,7 @@ router.post(
       const experience = await ExperienceModel.findById(req.params.expId);
 
       if (experience) {
-        console.log(req.body);
-
-        const { image } = req.body;
-
-        experience.image = image;
+        experience.image = req.file.path;
 
         await experience.save();
 

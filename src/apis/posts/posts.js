@@ -139,7 +139,6 @@ router
   .post(
     multer({ storage: cloudinaryStorage }).single("image"),
     async (req, res) => {
-      console.log("update image??");
       try {
         const getPostById = await PostModel.findById(req.params.postId);
 
