@@ -213,9 +213,15 @@ router.post("/", async (req, res, next) => {
 // to get all profiles
 router.get("/", async (req, res, next) => {
   try {
-    const profiles = await profileModel.find({username: req.query.username, _id: req.query.id}).populate("experiences");
+    if(req.query.username && req.query.id) {
+      const profiles = await profileModel.find({username: req.query.username, _id: req.query.id}).populate("experiences");
 
-    res.send(profiles);
+      res.send(profiles);
+    } else {
+      const profiles = await profileModel.find().populate("experiences");
+
+      res.send(profiles);
+    }
   } catch (error) {
     next(error);
   }
