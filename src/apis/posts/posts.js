@@ -22,6 +22,11 @@ Retrieve posts
     - GET /api/posts/
 */
 
+/*  Posting a new post:
+Retrieve posts
+    - GET /api/posts/:userId
+*/
+
 router.route("/").get(async (req, res) => {
   try {
     const posts = await PostModel.find().populate("user");
@@ -30,14 +35,8 @@ router.route("/").get(async (req, res) => {
   } catch (error) {
     res.status(500).send({ success: false, error: error.message });
   }
-});
-
-/*  Posting a new post:
-Retrieve posts
-    - GET /api/posts/:userId
-*/
-
-router.route("/").post(async (req, res) => {
+})
+.post(async (req, res) => {
   try {
     const post = new PostModel(req.body);
 
@@ -48,6 +47,8 @@ router.route("/").post(async (req, res) => {
     res.status(500).send({ success: false, error: error.message });
   }
 });
+
+
 
 /*    
 Retrieves the specified post
