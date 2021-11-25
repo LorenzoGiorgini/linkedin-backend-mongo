@@ -13,7 +13,7 @@ import profilesRouter from "./apis/profiles/profiles.js";
 const server = express();
 
 
-const whiteList = [process.env.LOCAL_FE, process.env.DEPLOYED_FE];
+const whiteList = [process.env.LOCAL_FE, process.env.DEPLOYED_FE, process.env.LOCAL_IPV4];
 const corsOptions = {
   origin: (origin, callback) => {
     if (whiteList.some((allowedUrl) => allowedUrl === origin)) {

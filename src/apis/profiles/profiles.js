@@ -316,4 +316,6 @@ router.get('/:profileId/CV' , async (req, res, next) => {
 		next(error);
 	}
 });
+
+
 export default router;
