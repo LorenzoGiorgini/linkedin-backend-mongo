@@ -45,7 +45,6 @@ router.post("/:userName/experiences", async (req, res, next) => {
 });
 
 router.get("/:userName/experiences", async (req, res, next) => {
-    console.log('inside first get')
   try {
     const experiences = await profileModel
       .findById(req.params.userName)
@@ -60,7 +59,6 @@ router.get("/:userName/experiences", async (req, res, next) => {
   } catch (error) {}
 });
 router.get("/:userName/experiences/csv", async (req, res, next) => {
-    console.log("inside csv experience")
       try {
       res.setHeader(
         "Content-Disposition",
@@ -101,8 +99,6 @@ router.get("/:userName/experiences/csv", async (req, res, next) => {
   });
 
 router.get("/:userName/experiences/:expId", async (req, res, next) => {
-    console.log('inside second get')
-    console.log(req.params.expId, 'should expect csv')
   try {
     const experience = await ExperienceModel.findById(req.params.expId);
 
@@ -170,11 +166,7 @@ router.post(
       const experience = await ExperienceModel.findById(req.params.expId);
 
       if (experience) {
-        console.log(req.body);
-
-        const { image } = req.body;
-
-        experience.image = image;
+        experience.image = req.file.path;
 
         await experience.save();
 
@@ -221,9 +213,15 @@ router.post("/", async (req, res, next) => {
 // to get all profiles
 router.get("/", async (req, res, next) => {
   try {
-    const profiles = await profileModel.find().populate("experiences");
+    if(req.query.username && req.query.id) {
+      const profiles = await profileModel.find({username: req.query.username, _id: req.query.id}).populate("experiences");
 
-    res.send(profiles);
+      res.send(profiles);
+    } else {
+      const profiles = await profileModel.find().populate("experiences");
+
+      res.send(profiles);
+    }
   } catch (error) {
     next(error);
   }
@@ -253,6 +251,25 @@ router.put("/:profileId", async (req, res, next) => {
     });
     if (profile) {
       res.send(profile);
+    } else {
+      next(createHttpError(404, `profile with id ${id} not found!`));
+    }
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.post("/:profileId/picture", multer({ storage: cloudinaryStorage }).single("image") , async (req, res, next) => {
+  try {
+    const id = req.params.profileId;
+    const profile = await profileModel.findById(id)
+    if (profile) {
+      profile.image = req.file.path;
+      
+      await profile.save();
+
+      res.status(201).send({success: true, data: profile});
+
     } else {
       next(createHttpError(404, `profile with id ${id} not found!`));
     }
@@ -299,4 +316,6 @@ router.get('/:profileId/CV' , async (req, res, next) => {
 		next(error);
 	}
 });
+
+
 export default router;

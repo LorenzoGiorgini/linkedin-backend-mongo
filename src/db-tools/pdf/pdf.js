@@ -8,7 +8,11 @@ const { extname } = path
 
 const fetchImage = async (data) => {
     
-    let resp = await fetch(data , { responseType: "arraybuffer" })
+    let resp = await fetch(data , 
+        { 
+            responseType: "arraybuffer" 
+        }
+    )
 
     return resp.arrayBuffer()
 }

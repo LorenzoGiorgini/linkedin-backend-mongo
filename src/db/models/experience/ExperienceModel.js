@@ -9,8 +9,7 @@ const experienceSchema = new Schema({
     endDate: {type: String, default: null},
     description: {type: String,},
     area: {type: String, required: true},
-    username: {type: String, required: true},
-    image: {type: String, default: 'https://i.stack.imgur.com/34AD2.jpg'},
+    image: {type: String, default: 'https://i.stack.imgur.com/34AD2.jpg'}
 },
 {
     timestamps: true
